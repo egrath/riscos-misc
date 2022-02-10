@@ -1,0 +1,48 @@
+REM > ds1307_i2c
+REM ///////////////////////////////////////////////
+REM // DS1307 I2C read tool
+REM // Reference: MAXIM DS1307 Datasheet
+REM ///////////////////////////////////////////////
+
+ON ERROR REPORT : PRINT " at line ";ERL : END
+
+DIM buffer% 7
+address%=&68
+
+REM ** set register pointer to 0
+buffer%?0=&00
+SYS "IIC_Control",(address%<<1),buffer%,1
+
+REM ** now read 7 bytes from the device
+SYS "IIC_Control",(address%<<1) OR 1,buffer%,7
+
+REM ** extract the data from the buffer
+rtc_seconds%=((?(buffer%+0) AND &70)>>4)*10 + (?(buffer%+0) AND &0F)
+rtc_minutes%=((?(buffer%+1) AND &70)>>4)*10 + (?(buffer%+1) AND &0F)
+rtc_hours%=((?(buffer%+2) AND &30)>>4)*10 + (?(buffer%+2) AND &0F)
+
+rtc_day%=((?(buffer%+4) AND &30)>>4)*10 + (?(buffer%+4) AND &0F)
+rtc_month%=((?(buffer%+5) AND &10)>>4)*10 + (?(buffer%+5) AND &0F)
+rtc_year%=(?(buffer%+6) >> 4)*10 + (?(buffer%+6) AND &0F) + 2000
+
+PRINT "Date",rtc_day%;".";rtc_month%;".";rtc_year%
+PRINT "Time",rtc_hours%;":";rtc_minutes%;".";rtc_seconds%
+
+END
+
+REM ** display data with arbitrary length in binary
+REM ** form
+DEFPROCdump_binary(w%,l%)
+    REM *** enumerate which bits are set
+    LOCAL bits%()
+    DIM bits%(l%)
+    FOR i%=0 TO l%-1
+        bits%(i%)=w% MOD 2
+        w%=w%/2
+    NEXT
+
+    FOR i%=l%-1 TO 0 STEP -1
+        PRINT ;bits%(i%);
+    NEXT
+    PRINT
+ENDPROC

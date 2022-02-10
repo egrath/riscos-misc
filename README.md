@@ -1,2 +1,2 @@
 # riscos-misc
-Various things regarding RISC OS
+This repository contains stuff related to my exploration of the RISC OS
